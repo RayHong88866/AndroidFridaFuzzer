@@ -6,15 +6,14 @@ var className = "tw.almor.lib.security.SecurityTool"
 
 function describeJavaClass(className, methodName) {
     var methods = Java.use(className).class.getDeclaredMethods()
+    var retVal = [];
     methods.forEach(method=>{
         if(method.toString().includes(methodName)){
-            console.log(method.getName())
-            console.log(method.getParameterTypes().toString())
-            return method.getParameterTypes().toString()
+            retVal.push(method)
             
         }
     })
-    
+    return retVal
     
 }
 
@@ -29,21 +28,54 @@ function str2bytesArray(str){
 
     return bytes
 }
-/* */
+function typeConvert(str, payload){
+    if(str[0] =="["){
+        if(str[1]=="B"){
+            return payload
+        }
+    }
 
-console.log("abcd")
+}
 
 function main(){
     Java.perform(function(){
-        describeJavaClass(className, "native")
-        var targetClass = Java.use(className)
         var env = Java.vm.getEnv()
-        console.log(targetClass)
-        for(var i=0; i<=60000; i++){
+        var methods = describeJavaClass(className, "native")
+        //console.log(className.replace(".","/"))
+        var targetClass = Java.use(className)
+ 
+        //var f = env.staticVaMethod()
+        var methodNames =[]
+        methods.forEach(method=>{
+            if(!methodNames.includes(method.getName())){
+                methodNames.push(method.getName())
+            }           
+        });
+        //console.log(methodNames)
+        methodNames.forEach(name=>{
+            console.log(name)
+            targetClass[name].overloads.forEach(target=>{
+                var len = target.argumentTypes.length
+                var types=[]
+                for(var i =0; i<len;i++){
+                    types.push(target.argumentTypes[i].className)
+                }
+                console.log(target.clone({traps: 'all' }));
+                
+            })
+        })
+            //console.log(mn.getName())
+            //for(target in targetClass[name].overloads){
+            //    console.log(target)
+            //}
+            
+            //console.log(targetClass[method.getName()].overloads[0].argumentTypes[0].className)
+        
+       /* for(var i=0; i<=60000; i++){
             var test_func = targetClass.nativeEncrypt.overload("[B","[B","[B","[B").clone({ traps: 'all' });
             test_func.call(targetClass, str2bytesArray("a"), str2bytesArray("a"), str2bytesArray("a"), str2bytesArray("a"))
             console.log(i)
-        }
+        }*/
     //var test_func = targetClass.encrypt.overload("java.lang.String", "java.lang.String").clone({ traps: 'all' });
     //var test_func = targetClass.nativeEncrypt.overload("[B"), "[B").clone({ traps: 'all' });
     //    var test_func = targetClass.nativeEncrypt.overload("[B", "[B")
